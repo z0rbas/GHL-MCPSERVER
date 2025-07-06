@@ -109,3 +109,62 @@ app.post('/mcp', async (req, res) => {
     error: { code: 404, message: 'Method not found' }
   });
 });
+
+app.post("/mcp", express.json(), async (req, res) => {
+  const { jsonrpc, id, method, params } = req.body;
+
+  if (method === "initialize") {
+    return res.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        serverInfo: {
+          name: "ghl-mcp-server",
+          version: "1.0.0"
+        },
+        capabilities: {
+          toolRegistry: true
+        }
+      }
+    });
+  }
+
+  if (method === "describe") {
+    return res.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        tools: [
+          {
+            name: "getContacts",
+            description: "Runs getContacts via GHL MCP",
+            parameters: {
+              type: "object",
+              properties: {},
+              required: []
+            }
+          }
+        ]
+      }
+    });
+  }
+
+  if (method === "invoke" && params?.tool_name === "getContacts") {
+    return res.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        message: "Mock contact list returned"
+      }
+    });
+  }
+
+  res.status(400).json({
+    jsonrpc: "2.0",
+    id,
+    error: {
+      code: -32601,
+      message: "Method not found"
+    }
+  });
+});
