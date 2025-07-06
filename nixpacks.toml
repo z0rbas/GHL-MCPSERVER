@@ -1,8 +1,5 @@
-[phases.setup]
-nixpkgsArchive = "23.05"
-
 [phases.build]
 cmds = [
   "npm install --include=dev",
-  "npm run build"
+  "npx tsc"
 ]
