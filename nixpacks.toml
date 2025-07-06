@@ -1,5 +1,15 @@
+[phases.setup]
+nixpkgsArchive = "https://github.com/NixOS/nixpkgs/archive/refs/tags/23.05.tar.gz"
+
+[phases.install]
+cmds = [
+  "npm install --include=dev"
+]
+
 [phases.build]
 cmds = [
-  "npm install --include=dev",
   "npx tsc"
 ]
+
+[start]
+cmd = "node dist/http-server.js"
