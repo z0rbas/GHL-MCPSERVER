@@ -53,3 +53,59 @@ app.get('/mcp', (req, res) => {
 });
 
 app.listen(port, () => console.log(`🚀 Listening on port ${port}`));
+
+// Windsurf MCP compatibility: /mcp endpoint (non-streaming fallback)
+app.post('/mcp', async (req, res) => {
+  const { method, id, params } = req.body;
+
+  if (method === 'initialize') {
+    return res.json({
+      jsonrpc: '2.0',
+      id,
+      result: {
+        serverInfo: { name: 'ghl-mcp-server', version: '1.0.0' },
+        capabilities: { toolExecution: true }
+      }
+    });
+  }
+
+  if (method === 'describe') {
+    return res.json({
+      jsonrpc: '2.0',
+      id,
+      result: {
+        tools: [
+          {
+            tool_name: 'getContacts',
+            description: 'Mock tool to fetch contacts',
+            parameters: {
+              type: 'object',
+              properties: {},
+              required: []
+            }
+          }
+        ]
+      }
+    });
+  }
+
+  if (method === 'invoke') {
+    const { tool_name, parameters } = params;
+    if (tool_name === 'getContacts') {
+      return res.json({
+        jsonrpc: '2.0',
+        id,
+        result: {
+          mockResult: 'Fetched contacts via invoke',
+          received: parameters
+        }
+      });
+    }
+  }
+
+  res.status(404).json({
+    jsonrpc: '2.0',
+    id,
+    error: { code: 404, message: 'Method not found' }
+  });
+});
