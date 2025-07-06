@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "GHL MCP Server",
+  "name_for_model": "ghl_mcp",
+  "description_for_human": "Use GoHighLevel tools like getContacts through Claude.",
+  "description_for_model": "Provides GoHighLevel tools such as getContacts via a unified endpoint.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://ghl-mcpserver-production.up.railway.app/openapi.yaml"
+  },
+  "logo_url": "https://ghl-mcpserver-production.up.railway.app/logo.png",
+  "contact_email": "support@ghltools.com",
+  "legal_info_url": "https://ghl-mcpserver-production.up.railway.app/legal"
+}
