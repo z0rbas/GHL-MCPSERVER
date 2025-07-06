@@ -1,10 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
-dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,37 +9,26 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Setup __dirname in ESM environments
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Serve static Claude plugin files
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.join(__dirname, '../public')));
 
-// Serve static files from /public
-app.use(express.static(path.join(__dirname, '..', 'public')));
-
-// Basic health check
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'GHL MCP Server is running' });
-});
-
-// SSE endpoint (optional for Windsurf)
+// SSE ping for Windsurf
 app.get('/sse', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
   const interval = setInterval(() => {
     res.write(`event: ping\ndata: {}\n\n`);
-  }, 3000);
-
-  req.on('close', () => {
-    clearInterval(interval);
-    res.end();
-  });
+  }, 10000);
+  req.on('close', () => clearInterval(interval));
 });
 
-// RPC endpoint
+// Core MCP endpoint
 app.post('/rpc', (req, res) => {
-  const { id, method, params } = req.body;
+  const { method, id, params } = req.body;
 
   if (method === 'initialize') {
     return res.json({
