@@ -10,12 +10,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Claude + Windsurf unified tool endpoint
-app.post('/tool/run', async (req, res) => {
+// Claude + Windsurf tool runner
+app.post('/tool/run', (req, res) => {
   const { tool_name, parameters } = req.body;
-  console.log(`➡️ Tool requested: ${tool_name}`);
-  console.log(`📦 Parameters:`, parameters);
-
   if (tool_name === 'getContacts') {
     return res.json({
       status: 'success',
@@ -29,7 +26,7 @@ app.post('/tool/run', async (req, res) => {
   res.status(400).json({ status: 'error', message: 'Unknown tool' });
 });
 
-// Windsurf compatibility: /sse for heartbeat/logging
+// Windsurf SSE
 app.get('/sse', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -37,7 +34,7 @@ app.get('/sse', (req, res) => {
   res.flushHeaders();
 
   const interval = setInterval(() => {
-    res.write(`event: heartbeat\ndata: {}\n\n`);
+    res.write(`event: ping\ndata: {}\n\n`);
   }, 10000);
 
   req.on('close', () => {
@@ -46,7 +43,26 @@ app.get('/sse', (req, res) => {
   });
 });
 
-// Start server
+// Windsurf /rpc for handshake
+app.post('/rpc', (req, res) => {
+  const { method, id } = req.body;
+
+  if (method === 'initialize') {
+    return res.json({
+      jsonrpc: '2.0',
+      id,
+      result: {
+        protocolVersion: '2024-11-05',
+        capabilities: {
+          toolExecution: true
+        }
+      }
+    });
+  }
+
+  res.status(404).json({ error: 'Method not implemented' });
+});
+
 app.listen(port, () => {
   console.log(`🚀 Listening on port ${port}`);
 });
